@@ -94,12 +94,39 @@ void listarClientes(Cliente clientes[], int numClientes) {
 
 // Função para realizar um débito na conta do cliente
 void debito(Cliente clientes[], int numClientes) {
-    FILE *arquivo = fopen("dados_bancarios.dat", "wb");
-    if (arquivo) {
-        fread(clientes, sizeof(Cliente), 1000, arquivo);
-        fclose(arquivo);
+     char cpfCliente[12];
+    char senhaCliente[20];
+    double valorDebito;
+
+    printf("Digite o CPF: ");
+    scanf("%s", cpfCliente);
+    printf("Digite a senha: ");
+    scanf("%s", senhaCliente);
+    printf("Digite o valor a ser debitado: ");
+    scanf("%lf", &valorDebito);
+
+    int clienteEncontrado = -1; // Inicializamos com -1 para indicar que o cliente não foi encontrado
+
+    for (int i = 0; i < numClientes; i++) {
+        if (compararStrings(clientes[i].cpf, cpfCliente) && compararStrings(clientes[i].senha, senhaCliente)) {
+            clienteEncontrado = i; // Encontrou o cliente pelo CPF e senha
+            break;
+        }
+    }
+
+    if (clienteEncontrado != -1) {
+        if (clientes[clienteEncontrado].saldo >= valorDebito) {
+            // Efetua o débito na conta do cliente
+            clientes[clienteEncontrado].saldo -= valorDebito;
+            printf("Débito de %.2lf realizado com sucesso.\n", valorDebito);
+        } else {
+            printf("Saldo insuficiente para realizar o débito.\n");
+        }
+    } else {
+        printf("CPF ou senha incorretos. Não é possível realizar o débito.\n");
     }
 }
+
 
 // Função para realizar um depósito na conta do cliente
 void deposito(Cliente clientes[], int numClientes) {
