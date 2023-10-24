@@ -1,5 +1,6 @@
 #include <stdio.h>
-#include "biblioteca.h"
+#include <string.h>
+
 
 // armazenar informações do cliente
 typedef struct {
@@ -10,7 +11,7 @@ typedef struct {
     char senha[20];
 } Cliente;
 
-// Função para criar um novo cliente
+// Função para criar um cliente
 void criarNCliente(Cliente clientes[], int *numClientes) {
     if (*numClientes < 1000) { // Verificar se há espaço para mais clientes
         Cliente novoCliente;
@@ -44,7 +45,7 @@ void apagarCliente(Cliente clientes[], int *numClientes) {
     int clienteEncontrado = -1; // Inicializamos com -1 para indicar que o cliente não foi encontrado
 
     for (int i = 0; i < *numClientes; i++) {
-        if (CompararString(clientes[i].cpf, cpfParaApagar) == 0) {
+        if (strcmp(clientes[i].cpf, cpfParaApagar) == 0) {
             clienteEncontrado = i; // Encontrou o cliente pelo CPF
             break;
         }
@@ -108,7 +109,7 @@ void debito(Cliente clientes[], int numClientes) {
     int clienteEncontrado = -1; // Inicializamos com -1 para indicar que o cliente não foi encontrado
 
     for (int i = 0; i < numClientes; i++) {
-        if (CompararString(clientes[i].cpf, cpfCliente) && CompararString(clientes[i].senha, senhaCliente)) {
+        if (strcmp(clientes[i].cpf, cpfCliente) == 0 && strcmp(clientes[i].senha, senhaCliente) == 0) {
             clienteEncontrado = i; // Encontrou o cliente pelo CPF e senha
             break;
         }
@@ -118,12 +119,12 @@ void debito(Cliente clientes[], int numClientes) {
         if (clientes[clienteEncontrado].saldo >= valorDebito) {
             // Efetua o débito na conta do cliente
             clientes[clienteEncontrado].saldo -= valorDebito;
-            printf("Débito de %.2lf realizado com sucesso.\n", valorDebito);
+            printf("Debito de %.2lf realizado com sucesso.\n", valorDebito);
         } else {
-            printf("Saldo insuficiente para realizar o débito.\n");
+            printf("Saldo insuficiente para realizar o debito.\n");
         }
     } else {
-        printf("CPF ou senha incorretos. Não é possível realizar o débito.\n");
+        printf("CPF ou senha incorretos. Nao e possivel realizar o debito.\n");
     }
 }
 
@@ -166,16 +167,16 @@ int main() {
         }
     int opcao;
     do {
-        printf("Menu de Opções:\n");
+        printf("Menu de Opcoes:\n");
         printf("1. Novo cliente\n");
         printf("2. Apagar cliente\n");
         printf("3. Listar clientes\n");
-        printf("4. Débito\n");
-        printf("5. Depósito\n");
+        printf("4. Debito\n");
+        printf("5. Deposito\n");
         printf("6. Extrato\n");
-        printf("7. Transferência Entre Contas\n");
+        printf("7. Transferencia Entre Contas\n");
         printf("0. Sair\n");
-        printf("Escolha uma opção: ");
+        printf("Escolha uma opcao: ");
         scanf("%d", &opcao);
 
         switch (opcao) {
