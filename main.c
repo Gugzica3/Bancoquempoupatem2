@@ -1,5 +1,5 @@
 #include <stdio.h>
-
+#include "biblioteca.h"
 
 // armazenar informações do cliente
 typedef struct {
@@ -94,7 +94,7 @@ void listarClientes(Cliente clientes[], int numClientes) {
 
 // Função para realizar um débito na conta do cliente
 void debito(Cliente clientes[], int numClientes) {
-     char cpfCliente[12];
+    char cpfCliente[12];
     char senhaCliente[20];
     double valorDebito;
 
@@ -108,7 +108,7 @@ void debito(Cliente clientes[], int numClientes) {
     int clienteEncontrado = -1; // Inicializamos com -1 para indicar que o cliente não foi encontrado
 
     for (int i = 0; i < numClientes; i++) {
-        if (compararStrings(clientes[i].cpf, cpfCliente) && compararStrings(clientes[i].senha, senhaCliente)) {
+        if (CompararString(clientes[i].cpf, cpfCliente) && CompararString(clientes[i].senha, senhaCliente)) {
             clienteEncontrado = i; // Encontrou o cliente pelo CPF e senha
             break;
         }
