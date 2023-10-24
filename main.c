@@ -131,10 +131,29 @@ void debito(Cliente clientes[], int numClientes) {
 
 // Função para realizar um depósito na conta do cliente
 void deposito(Cliente clientes[], int numClientes) {
-    FILE *arquivo = fopen("dados_bancarios.dat", "wb");
-    if (arquivo) {
-        fread(clientes, sizeof(Cliente), 1000, arquivo);
-        fclose(arquivo);
+    char cpfCliente[12];
+    double valorDeposito;
+
+    printf("Digite o CPF: ");
+    scanf("%s", cpfCliente);
+    printf("Digite o valor a ser depositado: ");
+    scanf("%lf", &valorDeposito);
+
+    int clienteEncontrado = -1; // Inicializamos com -1 para indicar que o cliente não foi encontrado
+
+    for (int i = 0; i < numClientes; i++) {
+        if (strcmp(clientes[i].cpf, cpfCliente) == 0) {
+            clienteEncontrado = i; // Encontrou o cliente pelo CPF
+            break;
+        }
+    }
+
+    if (clienteEncontrado != -1) {
+        // Efetua o depósito na conta do cliente
+        clientes[clienteEncontrado].saldo += valorDeposito;
+        printf("Depósito de %.2lf realizado com sucesso.\n", valorDeposito);
+    } else {
+        printf("Cliente com o CPF %s não encontrado.\n", cpfCliente);
     }
 }
 
@@ -148,12 +167,45 @@ void extrato(Cliente clientes[], int numClientes) {
 }
 
 // Função para realizar uma transferência entre contas
-void transferencia(Cliente clientes[], int numClientes) {
-    FILE *arquivo = fopen("dados_bancarios.dat", "wb");
-    if (arquivo) {
-        fread(clientes, sizeof(Cliente), 1000, arquivo);
-        fclose(arquivo);
+void transferencia(Cliente clientes[], int numClientes) { char cpfOrigem[12];
+    char senhaOrigem[20];
+    char cpfDestino[12];
+    double valorTransferencia;
+
+    printf("Digite o CPF da conta de origem: ");
+    scanf("%s", cpfOrigem);
+    printf("Digite a senha da conta de origem: ");
+    scanf("%s", senhaOrigem);
+    printf("Digite o CPF da conta de destino: ");
+    scanf("%s", cpfDestino);
+    printf("Digite o valor a ser transferido: ");
+    scanf("%lf", &valorTransferencia);
+
+    int clienteOrigem = -1;
+    int clienteDestino = -1;
+
+    for (int i = 0; i < numClientes; i++) {
+        if (strcmp(clientes[i].cpf, cpfOrigem)== 0 && strcmp(clientes[i].senha, senhaOrigem)== 0) {
+            clienteOrigem = i; // Encontrou o cliente de origem pelo CPF e senha
+        }
+        if (strcmp(clientes[i].cpf, cpfDestino) == 0) {
+            clienteDestino = i; // Encontrou o cliente de destino pelo CPF
+        }
     }
+
+    if (clienteOrigem != -1 && clienteDestino != -1) {
+        if (clientes[clienteOrigem].saldo >= valorTransferencia) {
+            // Efetua a transferência entre contas
+            clientes[clienteOrigem].saldo -= valorTransferencia;
+            clientes[clienteDestino].saldo += valorTransferencia;
+            printf("Transferência de %.2lf realizada com sucesso.\n", valorTransferencia);
+        } else {
+            printf("Saldo insuficiente na conta de origem para realizar a transferência.\n");
+        }
+    } else {
+        printf("Conta de origem, conta de destino ou senha incorretos. Não é possível realizar a transferência.\n");
+    }
+
 }
 
 int main() {
