@@ -1,14 +1,21 @@
 #include <stdio.h>
 #include <string.h>
 
+// Estrutura para transações
+typedef struct Transacao {
+    char tipo;
+    double valor;
+} Transacao;
 
-// armazenar informações do cliente
+// Estrutura para informações do cliente
 typedef struct {
     char nome[100];
     char cpf[12];
     int tipo_conta; // 1 para comum, 2 para plus
     double saldo;
     char senha[20];
+    Transacao extrato[100]; // Histórico de transações
+    int numTransacoes; // Número de transações no extrato
 } Cliente;
 
 // Função para criar um cliente
@@ -29,6 +36,15 @@ void criarNCliente(Cliente clientes[], int *numClientes) {
         // Adicione o novo cliente ao array de clientes
         clientes[*numClientes] = novoCliente;
         (*numClientes)++;
+
+        // Atualize o arquivo binário após adicionar um novo cliente
+        FILE *arquivo = fopen("dados_bancarios.dat", "w+b"); // Abre o arquivo para gravação binária
+        if (arquivo) {
+            fwrite(clientes, sizeof(Cliente), *numClientes, arquivo);
+            fclose(arquivo);
+        } else {
+            printf("Erro ao abrir o arquivo para gravação.\n");
+        }
 
         printf("Novo cliente criado com sucesso.\n");
     } else {
@@ -58,16 +74,19 @@ void apagarCliente(Cliente clientes[], int *numClientes) {
         }
 
         (*numClientes)--; // Decrementamos o número de clientes
+
+        // Atualize o arquivo binário após apagar um cliente
+        FILE *arquivo = fopen("dados_bancarios.dat", "w+b"); // Abre o arquivo para gravação binária
+        if (arquivo) {
+            fwrite(clientes, sizeof(Cliente), *numClientes, arquivo);
+            fclose(arquivo);
+        } else {
+            printf("Erro ao abrir o arquivo para gravação.\n");
+        }
+
         printf("Cliente apagado com sucesso.\n");
     } else {
         printf("Cliente com o CPF %s não encontrado.\n", cpfParaApagar);
-    }
-
-    // Atualize o arquivo binário após apagar um cliente
-    FILE *arquivo = fopen("dados_bancarios.dat", "wb");
-    if (arquivo) {
-        fwrite(clientes, sizeof(Cliente), *numClientes, arquivo);
-        fclose(arquivo);
     }
 }
 
@@ -90,7 +109,6 @@ void listarClientes(Cliente clientes[], int numClientes) {
             printf("\n");
         }
     }
-
 }
 
 // Função para realizar um débito na conta do cliente
@@ -106,28 +124,48 @@ void debito(Cliente clientes[], int numClientes) {
     printf("Digite o valor a ser debitado: ");
     scanf("%lf", &valorDebito);
 
-    int clienteEncontrado = -1; // Inicializamos com -1 para indicar que o cliente não foi encontrado
+    int clienteEncontrado = -1;
 
     for (int i = 0; i < numClientes; i++) {
         if (strcmp(clientes[i].cpf, cpfCliente) == 0 && strcmp(clientes[i].senha, senhaCliente) == 0) {
-            clienteEncontrado = i; // Encontrou o cliente pelo CPF e senha
+            clienteEncontrado = i;
             break;
         }
     }
 
     if (clienteEncontrado != -1) {
+        if (clientes[clienteEncontrado].tipo_conta == 1) {
+            valorDebito = valorDebito + valorDebito * 0.05;
+        } else if (clientes[clienteEncontrado].tipo_conta == 2) {
+            valorDebito = valorDebito + valorDebito * 0.03;
+        }
+
         if (clientes[clienteEncontrado].saldo >= valorDebito) {
             // Efetua o débito na conta do cliente
             clientes[clienteEncontrado].saldo -= valorDebito;
-            printf("Debito de %.2lf realizado com sucesso.\n", valorDebito);
+
+            // Atualiza o extrato do cliente
+            clientes[clienteEncontrado].extrato[clientes[clienteEncontrado].numTransacoes].tipo = 'D';
+            clientes[clienteEncontrado].extrato[clientes[clienteEncontrado].numTransacoes].valor = valorDebito;
+            clientes[clienteEncontrado].numTransacoes++;
+
+            // Atualize o arquivo binário após realizar o débito
+            FILE *arquivo = fopen("dados_bancarios.dat", "w+b"); // Abre o arquivo para gravação binária
+            if (arquivo) {
+                fwrite(clientes, sizeof(Cliente), numClientes, arquivo);
+                fclose(arquivo);
+            } else {
+                printf("Erro ao abrir o arquivo para gravação.\n");
+            }
+
+            printf("Débito de %.2lf realizado com sucesso.\n", valorDebito);
         } else {
-            printf("Saldo insuficiente para realizar o debito.\n");
+            printf("Saldo insuficiente para realizar o débito.\n");
         }
     } else {
-        printf("CPF ou senha incorretos. Nao e possivel realizar o debito.\n");
+        printf("CPF ou senha incorretos. Não é possível realizar o débito.\n");
     }
 }
-
 
 // Função para realizar um depósito na conta do cliente
 void deposito(Cliente clientes[], int numClientes) {
@@ -151,6 +189,21 @@ void deposito(Cliente clientes[], int numClientes) {
     if (clienteEncontrado != -1) {
         // Efetua o depósito na conta do cliente
         clientes[clienteEncontrado].saldo += valorDeposito;
+
+        // Atualiza o extrato do cliente
+        clientes[clienteEncontrado].extrato[clientes[clienteEncontrado].numTransacoes].tipo = 'C';
+        clientes[clienteEncontrado].extrato[clientes[clienteEncontrado].numTransacoes].valor = valorDeposito;
+        clientes[clienteEncontrado].numTransacoes++;
+
+        // Atualize o arquivo binário após realizar o depósito
+        FILE *arquivo = fopen("dados_bancarios.dat", "w+b"); // Abre o arquivo para gravação binária
+        if (arquivo) {
+            fwrite(clientes, sizeof(Cliente), numClientes, arquivo);
+            fclose(arquivo);
+        } else {
+            printf("Erro ao abrir o arquivo para gravação.\n");
+        }
+
         printf("Depósito de %.2lf realizado com sucesso.\n", valorDeposito);
     } else {
         printf("Cliente com o CPF %s não encontrado.\n", cpfCliente);
@@ -159,15 +212,48 @@ void deposito(Cliente clientes[], int numClientes) {
 
 // Função para gerar um extrato
 void extrato(Cliente clientes[], int numClientes) {
-    FILE *arquivo = fopen("dados_bancarios.dat", "wb");
-    if (arquivo) {
-        fread(clientes, sizeof(Cliente), 1000, arquivo);
-        fclose(arquivo);
+    char cpfCliente[12];
+    char senhaCliente[20];
+
+    printf("Digite o CPF: ");
+    scanf("%s", cpfCliente);
+    printf("Digite a senha: ");
+    scanf("%s", senhaCliente);
+
+    int clienteEncontrado = -1;
+
+    for (int i = 0; i < numClientes; i++) {
+        if (strcmp(clientes[i].cpf, cpfCliente) == 0 && strcmp(clientes[i].senha, senhaCliente) == 0) {
+            clienteEncontrado = i;
+            break;
+        }
+    }
+
+    if (clienteEncontrado != -1) {
+        printf("Extrato para o cliente: %s\n", clientes[clienteEncontrado].nome);
+        printf("CPF: %s\n", clientes[clienteEncontrado].cpf);
+        printf("Historico de transacoes:\n");
+
+        for (int i = 0; i < clientes[clienteEncontrado].numTransacoes; i++) {
+            if (clientes[clienteEncontrado].extrato[i].tipo == 'D') {
+                printf("(-) Debito: %.2lf\n ", clientes[clienteEncontrado].extrato[i].valor);
+            } else if (clientes[clienteEncontrado].extrato[i].tipo == 'C') {
+                printf("(+) Deposito: %.2lf\n ", clientes[clienteEncontrado].extrato[i].valor);
+            } else if (clientes[clienteEncontrado].extrato[i].tipo == 'P') {
+                printf("(-) Transferencia: %.2lf\n ", clientes[clienteEncontrado].extrato[i].valor);
+            } else if (clientes[clienteEncontrado].extrato[i].tipo == 'R') {
+                printf("(+) Transferencia: %.2lf\n ", clientes[clienteEncontrado].extrato[i].valor);
+            }
+        }
+        printf("Saldo atual: %.2lf\n", clientes[clienteEncontrado].saldo);
+    } else {
+        printf("CPF ou senha incorretos. Não é possível gerar o extrato.\n");
     }
 }
 
 // Função para realizar uma transferência entre contas
-void transferencia(Cliente clientes[], int numClientes) { char cpfOrigem[12];
+void transferencia(Cliente clientes[], int numClientes) {
+    char cpfOrigem[12];
     char senhaOrigem[20];
     char cpfDestino[12];
     double valorTransferencia;
@@ -185,7 +271,7 @@ void transferencia(Cliente clientes[], int numClientes) { char cpfOrigem[12];
     int clienteDestino = -1;
 
     for (int i = 0; i < numClientes; i++) {
-        if (strcmp(clientes[i].cpf, cpfOrigem)== 0 && strcmp(clientes[i].senha, senhaOrigem)== 0) {
+        if (strcmp(clientes[i].cpf, cpfOrigem) == 0 && strcmp(clientes[i].senha, senhaOrigem) == 0) {
             clienteOrigem = i; // Encontrou o cliente de origem pelo CPF e senha
         }
         if (strcmp(clientes[i].cpf, cpfDestino) == 0) {
@@ -198,6 +284,26 @@ void transferencia(Cliente clientes[], int numClientes) { char cpfOrigem[12];
             // Efetua a transferência entre contas
             clientes[clienteOrigem].saldo -= valorTransferencia;
             clientes[clienteDestino].saldo += valorTransferencia;
+
+            // Atualiza o extrato da conta de origem
+            clientes[clienteOrigem].extrato[clientes[clienteOrigem].numTransacoes].tipo = 'P';
+            clientes[clienteOrigem].extrato[clientes[clienteOrigem].numTransacoes].valor = valorTransferencia;
+            clientes[clienteOrigem].numTransacoes++;
+
+            // Atualiza o extrato da conta de destino
+            clientes[clienteDestino].extrato[clientes[clienteDestino].numTransacoes].tipo = 'R';
+            clientes[clienteDestino].extrato[clientes[clienteDestino].numTransacoes].valor = valorTransferencia;
+            clientes[clienteDestino].numTransacoes++;
+
+            // Atualize o arquivo binário após realizar a transferência
+            FILE *arquivo = fopen("dados_bancarios.dat", "w+b"); // Abre o arquivo para gravação binária
+            if (arquivo) {
+                fwrite(clientes, sizeof(Cliente), numClientes, arquivo);
+                fclose(arquivo);
+            } else {
+                printf("Erro ao abrir o arquivo para gravação.\n");
+            }
+
             printf("Transferência de %.2lf realizada com sucesso.\n", valorTransferencia);
         } else {
             printf("Saldo insuficiente na conta de origem para realizar a transferência.\n");
@@ -205,18 +311,25 @@ void transferencia(Cliente clientes[], int numClientes) { char cpfOrigem[12];
     } else {
         printf("Conta de origem, conta de destino ou senha incorretos. Não é possível realizar a transferência.\n");
     }
-
 }
 
 int main() {
     Cliente clientes[1000]; // Array para armazenar os clientes
     int numClientes = 0;
 
-    FILE *arquivo = fopen("dados_bancarios.dat", "rb");
+    // Abre o arquivo para leitura e gravação binária
+    FILE *arquivo = fopen("dados_bancarios.dat", "r+b");
+
     if (arquivo) {
+        // Se o arquivo existir, leia os dados para o array de clientes
         fread(clientes, sizeof(Cliente), 1000, arquivo);
+        fseek(arquivo, 0, SEEK_END); // Move o cursor para o final do arquivo
+
+        // Obtém o número de clientes no arquivo
+        numClientes = ftell(arquivo) / sizeof(Cliente);
         fclose(arquivo);
-        }
+    }
+
     int opcao;
     do {
         printf("Menu de Opcoes:\n");
@@ -262,10 +375,14 @@ int main() {
         }
 
     } while (opcao != 0);
-    arquivo = fopen("dados_bancarios.dat", "wb");
+
+    arquivo = fopen("dados_bancarios.dat", "w+b"); // Abre o arquivo para gravação binária
     if (arquivo) {
         fwrite(clientes, sizeof(Cliente), numClientes, arquivo);
         fclose(arquivo);
+    } else {
+        printf("Erro ao abrir o arquivo para gravação.\n");
     }
+
     return 0;
-    }
+}
