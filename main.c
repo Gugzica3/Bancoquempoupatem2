@@ -4,7 +4,7 @@
 // Estrutura para transações
 typedef struct Transacao {
     char tipo;
-    double valor;
+    float valor;
 } Transacao;
 
 // Estrutura para informações do cliente
@@ -256,7 +256,7 @@ void transferencia(Cliente clientes[], int numClientes) {
     char cpfOrigem[12];
     char senhaOrigem[20];
     char cpfDestino[12];
-    double valorTransferencia;
+    float valorTransferencia ;
 
     printf("Digite o CPF da conta de origem: ");
     scanf("%s", cpfOrigem);
@@ -265,7 +265,7 @@ void transferencia(Cliente clientes[], int numClientes) {
     printf("Digite o CPF da conta de destino: ");
     scanf("%s", cpfDestino);
     printf("Digite o valor a ser transferido: ");
-    scanf("%lf", &valorTransferencia);
+    scanf("%f", &valorTransferencia);
 
     int clienteOrigem = -1;
     int clienteDestino = -1;
