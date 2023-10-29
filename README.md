@@ -1,7 +1,8 @@
 # <p align="center">🏦 Sistema Bancário em C 🏦</p>
 
 <p align="center">
-  <img src="https://example.com/sistema_bancario.png" alt="Sistema Bancário" width="500">
+ ![image](https://github.com/Gugzica3/Bancoquempoupatem2/assets/92994715/684e93a9-2b4a-42c3-9485-7f44f250155f)
+ alt="Sistema Bancário" width="500">
 </p>
 
 ## 🚀 Funcionalidades
