@@ -17,6 +17,7 @@ int main() {
         printf("5. Deposito\n");
         printf("6. Extrato\n");
         printf("7. Transferencia Entre Contas\n");
+        printf("8. Acessar saldo atual\n");
         printf("0. Sair\n");
         printf("Escolha uma opcao: ");
         scanf("%d", &opcao);
@@ -42,6 +43,9 @@ int main() {
                 break;
             case 7:
                 transferencia(clientes, numClientes);
+                break;
+            case 8:
+                verificarSaldo(clientes, numClientes);
                 break;
             case 0:
                 printf("Saindo do programa.\n");
