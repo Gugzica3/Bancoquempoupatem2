@@ -44,7 +44,7 @@ int carregarClientes(Cliente clientes[]) {
     return numClientes;
 }
 
-// Função para salvar extrato em um arquivo binário separado
+// Função para salvar extrato em um arquivo binário
 void salvarExtrato(Transacao extratoClientes[], int numExtratos) {
     FILE *arquivo = fopen("extratos_bancarios.bin", "wb");
     if (arquivo) {
