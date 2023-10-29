@@ -8,9 +8,11 @@
 #include <stdio.h>
 #include <string.h>
 
-typedef struct Transacao {
-    char tipo;
+typedef struct {
+    char tipo; // 'D' para débito, 'C' para crédito, 'P' para transferência enviada, 'R' para transferência recebida
     float valor;
+    char data[11]; // campo para armazenar a data no formato dd/mm/yyyy
+    char hora[6]; // campo para armazenar a hora no formato hh:mm
 } Transacao;
 
 typedef struct {
@@ -22,6 +24,7 @@ typedef struct {
     Transacao extrato[100];
     int numTransacoes;
 } Cliente;
+
 
 void salvarClientes(Cliente clientes[], int numClientes);
 int carregarClientes(Cliente clientes[]);
