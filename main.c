@@ -12,11 +12,67 @@ typedef struct {
     char nome[100];
     char cpf[12];
     int tipo_conta; // 1 para comum, 2 para plus
-    double saldo;
+    float saldo;
     char senha[20];
     Transacao extrato[100]; // Histórico de transações
     int numTransacoes; // Número de transações no extrato
 } Cliente;
+
+// Função para salvar os dados dos clientes em um arquivo binário
+void salvarClientes(Cliente clientes[], int numClientes) {
+    FILE *arquivo = fopen("dados_bancarios.bin", "wb");
+    if (arquivo) {
+        fwrite(clientes, sizeof(Cliente), numClientes, arquivo);
+        fclose(arquivo);
+    } else {
+        printf("Erro ao abrir o arquivo para gravação.\n");
+    }
+}
+
+// Função para carregar os dados dos clientes de um arquivo binário
+int carregarClientes(Cliente clientes[]) {
+    FILE *arquivo = fopen("dados_bancarios.bin", "rb");
+    int numClientes = 0;
+
+    if (arquivo) {
+        // Carregue os dados do arquivo para o array de clientes
+        fread(clientes, sizeof(Cliente), 1000, arquivo);
+        fseek(arquivo, 0, SEEK_END);
+        numClientes = ftell(arquivo) / sizeof(Cliente);
+        fclose(arquivo);
+    }
+
+    return numClientes;
+}
+
+// Função para salvar extrato em um arquivo binário separado
+void salvarExtrato(Transacao extratoClientes[], int numExtratos) {
+    FILE *arquivo = fopen("extratos_bancarios.bin", "wb"); // Abre o arquivo para gravação binária
+    if (arquivo) {
+        fwrite(extratoClientes, sizeof(Transacao), numExtratos, arquivo);
+        fclose(arquivo);
+    } else {
+        printf("Erro ao abrir o arquivo de extratos para gravação.\n");
+    }
+}
+
+// Função para carregar extrato de um arquivo binário separado
+int carregarExtrato(Transacao extratoClientes[]) {
+    FILE *arquivo = fopen("extratos_bancarios.bin", "rb");
+    int numExtratos = 0;
+
+    if (arquivo) {
+        // Se o arquivo existir, leia os dados para o array de extratos
+        fread(extratoClientes, sizeof(Transacao), 1000, arquivo);
+        fseek(arquivo, 0, SEEK_END); // Move o cursor para o final do arquivo
+
+        // Obtém o número de extratos no arquivo
+        numExtratos = ftell(arquivo) / sizeof(Transacao);
+        fclose(arquivo);
+    }
+
+    return numExtratos;
+}
 
 // Função para criar um cliente
 void criarNCliente(Cliente clientes[], int *numClientes) {
@@ -29,7 +85,7 @@ void criarNCliente(Cliente clientes[], int *numClientes) {
         printf("Tipo de conta (1 para comum, 2 para plus): ");
         scanf("%d", &novoCliente.tipo_conta);
         printf("Valor inicial da conta: ");
-        scanf("%lf", &novoCliente.saldo);
+        scanf("%f", &novoCliente.saldo);
         printf("Senha do usuário: ");
         scanf("%s", novoCliente.senha);
 
@@ -38,7 +94,7 @@ void criarNCliente(Cliente clientes[], int *numClientes) {
         (*numClientes)++;
 
         // Atualize o arquivo binário após adicionar um novo cliente
-        FILE *arquivo = fopen("dados_bancarios.dat", "w+b"); // Abre o arquivo para gravação binária
+        FILE *arquivo = fopen("dados_bancarios.bin", "wb"); // Abre o arquivo para gravação binária
         if (arquivo) {
             fwrite(clientes, sizeof(Cliente), *numClientes, arquivo);
             fclose(arquivo);
@@ -76,7 +132,7 @@ void apagarCliente(Cliente clientes[], int *numClientes) {
         (*numClientes)--; // Decrementamos o número de clientes
 
         // Atualize o arquivo binário após apagar um cliente
-        FILE *arquivo = fopen("dados_bancarios.dat", "w+b"); // Abre o arquivo para gravação binária
+        FILE *arquivo = fopen("dados_bancarios.bin", "wb"); // Abre o arquivo para gravação binária
         if (arquivo) {
             fwrite(clientes, sizeof(Cliente), *numClientes, arquivo);
             fclose(arquivo);
@@ -150,7 +206,7 @@ void debito(Cliente clientes[], int numClientes) {
             clientes[clienteEncontrado].numTransacoes++;
 
             // Atualize o arquivo binário após realizar o débito
-            FILE *arquivo = fopen("dados_bancarios.dat", "w+b"); // Abre o arquivo para gravação binária
+            FILE *arquivo = fopen("dados_bancarios.bin", "wb"); // Abre o arquivo para gravação binária
             if (arquivo) {
                 fwrite(clientes, sizeof(Cliente), numClientes, arquivo);
                 fclose(arquivo);
@@ -196,7 +252,7 @@ void deposito(Cliente clientes[], int numClientes) {
         clientes[clienteEncontrado].numTransacoes++;
 
         // Atualize o arquivo binário após realizar o depósito
-        FILE *arquivo = fopen("dados_bancarios.dat", "w+b"); // Abre o arquivo para gravação binária
+        FILE *arquivo = fopen("dados_bancarios.bin", "wb"); // Abre o arquivo para gravação binária
         if (arquivo) {
             fwrite(clientes, sizeof(Cliente), numClientes, arquivo);
             fclose(arquivo);
@@ -296,7 +352,7 @@ void transferencia(Cliente clientes[], int numClientes) {
             clientes[clienteDestino].numTransacoes++;
 
             // Atualize o arquivo binário após realizar a transferência
-            FILE *arquivo = fopen("dados_bancarios.dat", "w+b"); // Abre o arquivo para gravação binária
+            FILE *arquivo = fopen("dados_bancarios.bin", "wb"); // Abre o arquivo para gravação binária
             if (arquivo) {
                 fwrite(clientes, sizeof(Cliente), numClientes, arquivo);
                 fclose(arquivo);
@@ -315,20 +371,9 @@ void transferencia(Cliente clientes[], int numClientes) {
 
 int main() {
     Cliente clientes[1000]; // Array para armazenar os clientes
-    int numClientes = 0;
-
-    // Abre o arquivo para leitura e gravação binária
-    FILE *arquivo = fopen("dados_bancarios.dat", "r+b");
-
-    if (arquivo) {
-        // Se o arquivo existir, leia os dados para o array de clientes
-        fread(clientes, sizeof(Cliente), 1000, arquivo);
-        fseek(arquivo, 0, SEEK_END); // Move o cursor para o final do arquivo
-
-        // Obtém o número de clientes no arquivo
-        numClientes = ftell(arquivo) / sizeof(Cliente);
-        fclose(arquivo);
-    }
+    Transacao extratoClientes[1000]; // Array para armazenar os extratos
+    int numClientes = carregarClientes(clientes); // Carregar os clientes do arquivo
+    int numExtratos = carregarExtrato(extratoClientes); // Carregar os extratos do arquivo
 
     int opcao;
     do {
@@ -376,13 +421,8 @@ int main() {
 
     } while (opcao != 0);
 
-    arquivo = fopen("dados_bancarios.dat", "w+b"); // Abre o arquivo para gravação binária
-    if (arquivo) {
-        fwrite(clientes, sizeof(Cliente), numClientes, arquivo);
-        fclose(arquivo);
-    } else {
-        printf("Erro ao abrir o arquivo para gravação.\n");
-    }
+    salvarClientes(clientes, numClientes); // Salvar os clientes no arquivo
+    salvarExtrato(extratoClientes, numExtratos); // Salvar os extratos no arquivo
 
     return 0;
 }
