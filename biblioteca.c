@@ -568,3 +568,31 @@ void transferencia(Cliente clientes[], int numClientes) {
            "possível realizar a transferência.\n");
   }
 }
+
+// Verifica o saldo atual
+void verificarSaldo(Cliente clientes[], int numClientes) {
+    char cpf[12];
+    char senha[40];
+
+    // Solicita ao usuário que digite os dados para verificação do saldo
+    printf("Digite o CPF: ");
+    scanf("%s", cpf);
+    printf("Digite a senha: ");
+    scanf("%s", senha);
+
+    // Procura o cliente pelo CPF no array de clientes
+    int clienteEncontrado = -1;
+    for (int i = 0; i < numClientes; i++) {
+        if (strcmp(clientes[i].cpf, cpf) == 0 && strcmp(clientes[i].senha, senha) == 0) {
+            clienteEncontrado = i;
+            break;
+        }
+    }
+
+    // Apresenta o saldo, se o cliente for encontrado
+    if (clienteEncontrado != -1) {
+        printf("Saldo atual: %.2f\n", clientes[clienteEncontrado].saldo);
+    } else {
+        printf("Cliente não encontrado. Verifique o CPF e a senha digitados.\n");
+    }
+}
