@@ -1,4 +1,7 @@
 # <p align="center">🏦 Sistema Bancário em C 🏦</p>
+> <p>| Gustavo Bertoluzzi Cardoso & Isabella Rosseto | </p>
+
+
 
  ![image](https://github.com/Gugzica3/Bancoquempoupatem2/assets/92994715/684e93a9-2b4a-42c3-9485-7f44f250155f)
 
