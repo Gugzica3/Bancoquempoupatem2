@@ -3,9 +3,6 @@
 //
 
 #include "biblioteca.h"
-#include "biblioteca.h"
-
-#include "biblioteca.h"
 #include <time.h>
 
 // Função para salvar os dados dos clientes em um arquivo binário
@@ -412,7 +409,6 @@ void extrato(Cliente clientes[], int numClientes) {
   }
 }
 
-// Função para realizar uma transferência entre contas
 void transferencia(Cliente clientes[], int numClientes) {
   char cpfOrigem[12];
   char senhaOrigem[40];
