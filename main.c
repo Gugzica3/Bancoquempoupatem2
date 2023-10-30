@@ -2,10 +2,8 @@
 #include "biblioteca.h"
 
 int main() {
-    Cliente clientes[1000]; // Array para armazenar os clientes
-    Transacao extratoClientes[1000]; // Array para armazenar os extratos
-    int numClientes = carregarClientes(clientes); // Carregar os clientes do arquivo
-    int numExtratos = carregarExtrato(extratoClientes); // Carregar os extratos do arquivo
+    Cliente clientes[MAX_CLIENTES];
+    int numClientes = carregarClientes(clientes);
 
     int opcao;
     do {
@@ -32,9 +30,20 @@ int main() {
             case 3:
                 listarClientes(clientes, numClientes);
                 break;
-            case 4:
-                debito(clientes, numClientes);
+            case 4: {
+                char cpfCliente[12];
+                char senhaCliente[20];
+                double valorDebito;
+                printf("Digite o CPF: ");
+                scanf("%s", cpfCliente);
+                printf("Digite a senha: ");
+                scanf("%s", senhaCliente);
+                printf("Digite o valor a ser debitado: ");
+                scanf("%lf", &valorDebito);
+                printf("");
+                debito(clientes, numClientes, cpfCliente, senhaCliente, valorDebito);
                 break;
+            }
             case 5:
                 deposito(clientes, numClientes);
                 break;
@@ -57,8 +66,8 @@ int main() {
 
     } while (opcao != 0);
 
-    salvarClientes(clientes, numClientes); // Salvar os clientes no arquivo
-    salvarExtrato(extratoClientes, numExtratos); // Salvar os extratos no arquivo
+    salvarClientes(clientes, numClientes);
+    salvarExtratoTXT(clientes, numClientes);
 
     return 0;
 }
